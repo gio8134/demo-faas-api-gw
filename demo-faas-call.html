@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Demo FaaS Gateway</title>
+
+    <style>
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+            padding: 40px;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px #ccc;
+        }
+
+        h1 {
+            margin-top: 0;
+        }
+
+        label {
+            display: block;
+            margin-top: 20px;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        select,
+        textarea,
+        button {
+            width: 100%;
+            padding: 12px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        textarea {
+            height: 180px;
+            font-family: monospace;
+        }
+
+        button {
+            margin-top: 20px;
+            background: #1976d2;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #135ba1;
+        }
+
+        pre {
+            margin-top: 20px;
+            background: #222;
+            color: #00ff88;
+            padding: 15px;
+            overflow: auto;
+        }
+
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>Demo FaaS API Gateway</h1>
+
+    <label>Nome FaaS</label>
+
+    <select id="nome-faas"></select>
+
+    <label>Payload JSON</label>
+
+    <textarea id="payload">
+{
+  "value": 10
+}
+    </textarea>
+
+    <button onclick="invokeFaas()">
+        Invoke FaaS
+    </button>
+
+    <pre id="result"></pre>
+
+</div>
+
+<script>
+
+async function loadFaasList() {
+
+    const response = await fetch("/faas");
+
+    const lista = await response.json();
+
+    const select = document.getElementById("nome-faas");
+
+    lista.forEach(faas => {
+
+        const option = document.createElement("option");
+
+        option.value = faas["nome-faas"];
+        option.textContent = faas["nome-faas"];
+
+        select.appendChild(option);
+    });
+}
+
+
+async function invokeFaas() {
+
+    const result = document.getElementById("result");
+
+    result.textContent = "Loading...";
+
+    try {
+
+        const nomeFaas =
+            document.getElementById("nome-faas").value;
+
+        const payloadText =
+            document.getElementById("payload").value;
+
+        let payload = JSON.parse(payloadText);
+
+        payload["nome-faas"] = nomeFaas;
+
+        const response = await fetch("/trigger", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+
+        result.textContent =
+            JSON.stringify(data, null, 2);
+
+    } catch (err) {
+
+        result.textContent =
+            "ERROR:\n" + err;
+    }
+}
+
+
+loadFaasList();
+
+</script>
+
+</body>
+</html>
