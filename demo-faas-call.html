@@ -2,7 +2,9 @@
 <html lang="it">
 
 <head>
+
     <meta charset="UTF-8">
+
     <title>Demo FaaS Gateway</title>
 
     <style>
@@ -35,11 +37,16 @@
 
         select,
         textarea,
-        button {
+        button,
+        input {
             width: 100%;
             padding: 12px;
             font-size: 14px;
             box-sizing: border-box;
+        }
+
+        input {
+            background: #f0f0f0;
         }
 
         textarea {
@@ -68,6 +75,7 @@
         }
 
     </style>
+
 </head>
 
 <body>
@@ -78,7 +86,24 @@
 
     <label>Nome FaaS</label>
 
-    <select id="nome-faas"></select>
+    <select
+        id="nome-faas"
+        onchange="updateFaasDetails()">
+    </select>
+
+    <label>FaaS URL</label>
+
+    <input
+        type="text"
+        id="faas-url"
+        readonly>
+
+    <label>FaaS Namespace</label>
+
+    <input
+        type="text"
+        id="faas-namespace"
+        readonly>
 
     <label>Payload JSON</label>
 
@@ -106,36 +131,87 @@ async function loadFaasList() {
 
     const select = document.getElementById("nome-faas");
 
+    select.innerHTML = "";
+
     lista.forEach(faas => {
 
         const option = document.createElement("option");
 
-        option.value = faas["nome-faas"];
-        option.textContent = faas["nome-faas"];
+        option.value = faas["faas-url"];
+
+        option.textContent = faas["faas-name"];
+
+        option.dataset.namespace =
+            faas["faas-namespace"];
+
+        option.dataset.name =
+            faas["faas-name"];
+
+        option.dataset.url =
+            faas["faas-url"];
 
         select.appendChild(option);
     });
+
+    updateFaasDetails();
+}
+
+
+function updateFaasDetails() {
+
+    const select =
+        document.getElementById("nome-faas");
+
+    const selectedOption =
+        select.options[select.selectedIndex];
+
+    if (!selectedOption) {
+        return;
+    }
+
+    document.getElementById("faas-url").value =
+        selectedOption.dataset.url || "";
+
+    document.getElementById("faas-namespace").value =
+        selectedOption.dataset.namespace || "";
 }
 
 
 async function invokeFaas() {
 
-    const result = document.getElementById("result");
+    const result =
+        document.getElementById("result");
 
     result.textContent = "Loading...";
 
     try {
 
-        const nomeFaas =
-            document.getElementById("nome-faas").value;
+        const select =
+            document.getElementById("nome-faas");
+
+        const selectedOption =
+            select.options[select.selectedIndex];
+
+        const faasName =
+            selectedOption.dataset.name;
+
+        const faasUrl =
+            selectedOption.dataset.url;
+
+        const faasNamespace =
+            selectedOption.dataset.namespace;
 
         const payloadText =
             document.getElementById("payload").value;
 
         let payload = JSON.parse(payloadText);
 
-        payload["nome-faas"] = nomeFaas;
+        // IMPORTANTE: il backend usa "nome-faas"
+        payload["nome-faas"] = faasName;
+        payload["faas-url"] = faasUrl;
+        payload["faas-namespace"] = faasNamespace;
 
+        // CHIAMATA AL GATEWAY (NON alla FaaS)
         const response = await fetch("/trigger", {
             method: "POST",
             headers: {
@@ -156,10 +232,10 @@ async function invokeFaas() {
     }
 }
 
-
 loadFaasList();
 
 </script>
 
 </body>
+
 </html>

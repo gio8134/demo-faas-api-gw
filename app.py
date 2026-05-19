@@ -28,7 +28,13 @@ def trigger():
         }), 400
     try:
         faas_url = get_fass_url_from_faas_name(data.get("nome-faas"))
+        #faas_url = data.get("nome-faas")
     except Exception as e1:
+        return jsonify({
+            "status": "API-GW error in faas-url",
+            "message": "faas non indicata o non presente"
+        }), 400
+    if not faas_url:
         return jsonify({
             "status": "API-GW error in faas-url",
             "message": "faas non indicata o non presente"
@@ -46,4 +52,4 @@ def trigger():
         }), 500
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8080)
+    app.run(host="0.0.0.0", port=5000)

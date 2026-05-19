@@ -10,6 +10,6 @@ COPY lib.py .
 COPY app.py .
 COPY demo-faas-call.html .
 
-EXPOSE 8080
+EXPOSE 5000
 
-CMD ["gunicorn", "--timeout", "180","--bind", "0.0.0.0:8080", "app:app"]
+CMD ["gunicorn", "--timeout", "180","--bind", "0.0.0.0:5000", "app:app"]
